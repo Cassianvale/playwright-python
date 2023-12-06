@@ -7,6 +7,7 @@
 - [ ] 附件上传  
 
 **本地部署**  
+  
 下载[Allure](https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/)，并配置Allure环境  
 ```
 cd playwright-python
