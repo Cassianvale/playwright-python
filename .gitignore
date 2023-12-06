@@ -10,10 +10,11 @@ __pycache__/
 
 allure-results
 allure-report
-
+report/
 
 # Distribution / packaging
 .report
+
 .Python
 build/
 develop-eggs/
