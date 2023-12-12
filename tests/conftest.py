@@ -53,7 +53,7 @@ def pytest_generate_tests(metafunc):
             metafunc.no_default_fixture = True
             metafunc._mark_test_as_skipped()
 
-pytest-bdd generate tests/features/test_login.feature > tests/step_definition/test_login.py
+
 
 def pytest_addoption(parser):
     parser.addoption(

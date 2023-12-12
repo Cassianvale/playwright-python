@@ -18,4 +18,14 @@ def test_successful_login():
     """Successful Login."""
 
 
+@given('我已经打开了登录页面')
+def open_login_page():
+    """Open Login Page."""
 
+@when('我输入正确的用户名和密码')
+def input_username_and_password():
+    """Input username and password."""
+
+@then('我应该看到仪表板')
+def check_dashboard():
+    """Check dashboard."""
