@@ -8,7 +8,6 @@ class Input(BaseComponent):
     def type_of(self) -> str:
         return 'input'
 
-    #
     def fill(self, value: str, validate_value=False, **kwargs):
         with allure.step(f'将 {self.type_of} "{self.name}" 填写为值 "{value}"'):
             locator = self.get_locator(**kwargs)

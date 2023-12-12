@@ -1,4 +1,0 @@
-import allure_pytest
-
-
-
