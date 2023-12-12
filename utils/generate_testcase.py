@@ -1,64 +1,63 @@
 # feature_to_testcase.py
 
+import re
 import os
+from common import ensure_path_sep
 
-from pytest_bdd import (
-    scenario,
-)
-
-
-def generate_test_cases(feature_text):
+def generate_test_cases(feature_file: str):
     """Generate pytest-bdd scenarios from feature text.
 
     Args:
-        feature_text (str): Gherkin 语法中的特征文本
+        feature_file (str): Feature file path
 
     Returns:
-        dict: 场景和步骤的字典
+        None
     """
-    # Create a temporary file to store the feature text
-    with open(os.path.join(os.path.dirname(__file__), 'feature.feature'), 'w') as f:
-        f.write(feature_text)
+    with open(feature_file, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
 
-    # Load the feature file into the pytest-bdd engine
+    scenario = None
+    steps = []
+    for line in lines:
+        line = line.strip()
+        if line.startswith('Scenario:'):
+            scenario = line.split('Scenario: ')[1].strip().replace(' ', '_').lower()
+        elif line.startswith('Given') or line.startswith('When') or line.startswith('Then'):
+            step = re.sub(r'(Given: |When: |Then: |And: )', '', line).strip().replace(' ', '_').lower()
+            steps.append(step)
 
-    os.path.dirname(os.path.abspath(__file__))
 
 
-factory = TempPathFactory(search_path=os.path.dirname(__file__))
-pytest_bdd.pytest_plugins.register(factory.mktemp('').name)
-pytest_bdd.setup_bdd(pytest.config, ['-s', '--debug'])
+    # 获取文件名(不包含拓展名)
+    filename = os.path.basename(feature_file)
+    filename_parts = os.path.splitext(filename)[0]
+    # 获取文件路径的前一部分，即上层目录并获取目录名称
+    parent_dir_name = os.path.basename(os.path.dirname(feature_file))
+    # 场景路径（文件名+上一级目录名称）
+    scenario_path = parent_dir_name + '/' + filename
 
-# Discover scenarios and steps
-scenarios, steps = pytest_bdd.parse_scenarios('feature.feature')
 
-# Convert the scenarios and steps into a dictionary
-test_cases = {}
-for scenario_name, scenario_steps in scenarios.items():
-    test_case_name = f'test_{scenario_name.lower()}'
-    test_cases[test_case_name] = scenario(scenario_name, target_fixture=test_case_name)
-    for step_name, step_func in scenario_steps.items():
-        test_cases[test_case_name].add_step(step_name, step_func)
+    with open(ensure_path_sep(f'\\tests\\step_defs\\test_{filename_parts}.py'), 'w', encoding='utf-8') as file:
 
-return test_cases
+        file.write('from pytest_bdd import scenario, given, when, then\n\n')
+        file.write(f'@scenario(\'{scenario_path}\', \'{scenario.replace("_", " ").title()}\')\n')
+        file.write(f'def test_{scenario}():\n')
+        file.write('    pass\n\n')
 
-# Example usage:
+        for step in steps:
+            file.write(f'@given(\'{step.replace("_", " ").title()}\')\n')
+            file.write(f'def given_{step}():\n')
+            file.write('    pass\n\n')
+
+        for step in steps:
+            file.write(f'@when(\'{step.replace("_", " ").title()}\')\n')
+            file.write(f'def {step}():\n')
+            file.write('    pass\n\n')
+
+        for step in steps:
+            file.write(f'@then(\'{step.replace("_", " ").title()}\')\n')
+            file.write(f'def {step}():\n')
+            file.write('    pass\n\n')
+
 if __name__ == '__main__':
-    feature_text = dedent("""\
-      Feature: Login Feature
-        Scenario: Successful Login
-          Given I have opened the login page
-          When I enter the correct username and password
-          Then I should see the dashboard
-
-        Scenario: Failed Login
-          Given I have opened the login page
-          When I enter the incorrect username and password
-          Then I should see an error message
-  """)
-
-    test_cases = generate_test_cases(feature_text)
-    print(test_cases)
-    # Output should be a dictionary with two keys: 'test_successful_login' and 'test_failed_login'
-    # Each key should point to a function representing a scenario.
-    # The functions can be imported and used in a test suite.
+    generate_test_cases(ensure_path_sep('\\tests\\features\\shop\\shop.feature'))

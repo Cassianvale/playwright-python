@@ -1,31 +1,41 @@
-"""登录功能的测试 feature tests."""
+# test_login_feature.py
 
-from pytest_bdd import (
-    given,
-    scenario,
-    then,
-    when,
-)
+from pytest_bdd import scenarios, given, when, then
+
+scenarios('login.feature')
 
 
-@scenario('features\test_login.feature', 'Failed Login')
-def test_failed_login():
-    """Failed Login."""
-
-
-@scenario('features\test_login.feature', 'Successful Login')
-def test_successful_login():
-    """Successful Login."""
-
-
-@given('我已经打开了登录页面')
+@given('I have opened the login page')
 def open_login_page():
-    """Open Login Page."""
+    # Add code to open the login page
+    pass
 
-@when('我输入正确的用户名和密码')
-def input_username_and_password():
-    """Input username and password."""
 
-@then('我应该看到仪表板')
-def check_dashboard():
-    """Check dashboard."""
+@when('I enter the correct username and password')
+def enter_correct_credentials():
+    # Add code to enter correct username and password
+    pass
+
+
+@when('I enter the incorrect username and password')
+def enter_incorrect_credentials():
+    # Add code to enter incorrect username and password
+    pass
+
+
+@when('I submit the form')
+def submit_form():
+    # Add code to submit the form
+    pass
+
+
+@then('I should see the dashboard')
+def should_see_dashboard():
+    # Add assertion to check if the dashboard is visible
+    pass
+
+
+@then('I should see an error message')
+def should_see_error_message():
+    # Add assertion to check if an error message is visible
+    pass
