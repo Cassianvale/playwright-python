@@ -1,10 +1,16 @@
 # playwright-python
 
-> 虚拟环境：Python 3.8.5 、pytest 7.2.0  
+> 虚拟环境: Python 3.8.5 、pytest 7.2.0  
+
+**Roadmap**  
 
 - [x] 封装页面组件、Log日志  
-- [ ] 发送测试报告、邮件通知  
-- [ ] 附件上传  
+- [x] 基于pytest-bdd生成测试用例，重构自动生成用例方法
+- [ ] 使用OpenAi API根据steps自动生成函数名  
+- [ ] 增加自定义函数
+- [ ] 生成bdd测试报告
+- [ ] 发送测试报告邮件通知  
+
 
 **本地部署**  
   
@@ -14,6 +20,11 @@ cd playwright-python
 python -m .venv venv
 source .venv/Scripts/activate
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pytest-bdd generate tests/features/shop/shop.feature > tests\step_defs\test_shop.py
+```
+运行新模板
+```
+python ./utils/generate_testcase.py generate tests/features/shop/shop.feature > tests/step_defs/shop/test_shop.py
 ```
 
 **开始运行**  

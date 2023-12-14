@@ -1,63 +1,85 @@
-# feature_to_testcase.py
+# custom_generate_code.py
+# -*- coding: utf-8 -*-
 
-import re
+"""使用新模板生成测试用例"""
+
 import os
-from common import ensure_path_sep
+import pytest
+import argparse
+import openai
+from openai.error import OpenAIError
+from pytest_bdd import generation
+from pytest_bdd.generation import cast, make_python_name, make_python_docstring, make_string_literal, parse_feature_files
+from pytest_bdd.parser import Feature, ScenarioTemplate, Step
+from pytest_bdd.scripts import check_existense, migrate_tests
+from mako.lookup import TemplateLookup
+from typing import List
+from utils.yaml_control import read_config, mask_system, mask_user
+from utils.log_control import INFO, ERROR
 
-def generate_test_cases(feature_file: str):
-    """Generate pytest-bdd scenarios from feature text.
-
-    Args:
-        feature_file (str): Feature file path
-
-    Returns:
-        None
-    """
-    with open(feature_file, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
-
-    scenario = None
-    steps = []
-    for line in lines:
-        line = line.strip()
-        if line.startswith('Scenario:'):
-            scenario = line.split('Scenario: ')[1].strip().replace(' ', '_').lower()
-        elif line.startswith('Given') or line.startswith('When') or line.startswith('Then'):
-            step = re.sub(r'(Given: |When: |Then: |And: )', '', line).strip().replace(' ', '_').lower()
-            steps.append(step)
+new_template_lookup = TemplateLookup(directories=[os.path.join(os.path.dirname(__file__), "templates")])
 
 
+def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTemplate], steps: List[Step]) -> str:
+    """Generate test code using a new template file."""
+    grouped_steps = generation.group_steps(steps)
 
-    # 获取文件名(不包含拓展名)
-    filename = os.path.basename(feature_file)
-    filename_parts = os.path.splitext(filename)[0]
-    # 获取文件路径的前一部分，即上层目录并获取目录名称
-    parent_dir_name = os.path.basename(os.path.dirname(feature_file))
-    # 场景路径（文件名+上一级目录名称）
-    scenario_path = parent_dir_name + '/' + filename
+    template = new_template_lookup.get_template("new_test.py.mak")
+    
+    results = template.render(
+        features=features,
+        scenarios=scenarios,
+        steps=grouped_steps,
+        make_python_name=make_python_name,
+        make_python_docstring=make_python_docstring,
+        make_string_literal=make_string_literal,
+    )
+
+    return cast(str, results)
+
+# 使用 monkeypatch 替换原库里的代码
+@pytest.fixture
+def patch_generate_code(monkeypatch):
+    monkeypatch.setattr(generation, "generate_code", custom_generate_code)
+
+# 这是一个使用了上面 fixture 的测试函数
+def test_with_custom_generate_code(patch_generate_code):
+    # 调用 generate_code 时将实际调用 custom_generate_code
+    assert True
 
 
-    with open(ensure_path_sep(f'\\tests\\step_defs\\test_{filename_parts}.py'), 'w', encoding='utf-8') as file:
+# generate cli命令
+def print_generated_code(args: argparse.Namespace) -> None:
+    """Print generated test code for the given filenames."""
+    features, scenarios, steps = parse_feature_files(args.files)
+    # 这里使用的是自定义 custom_generate_code 函数
+    code = custom_generate_code(features, scenarios, steps)
+    print(code)
 
-        file.write('from pytest_bdd import scenario, given, when, then\n\n')
-        file.write(f'@scenario(\'{scenario_path}\', \'{scenario.replace("_", " ").title()}\')\n')
-        file.write(f'def test_{scenario}():\n')
-        file.write('    pass\n\n')
+def main() -> None:
+    """Custom main entry point."""
+    parser = argparse.ArgumentParser(prog="pytest-bdd")
+    subparsers = parser.add_subparsers(help="sub-command help", dest="command")
+    subparsers.required = True
+    parser_generate = subparsers.add_parser("generate", help="generate help")
+    parser_generate.add_argument(
+        "files",
+        metavar="FEATURE_FILE",
+        type=check_existense,
+        nargs="+",
+        help="Feature files to generate test code with",
+    )
+    # 设置默认的函数为自定义的 print_generated_code 函数
+    parser_generate.set_defaults(func=print_generated_code)
 
-        for step in steps:
-            file.write(f'@given(\'{step.replace("_", " ").title()}\')\n')
-            file.write(f'def given_{step}():\n')
-            file.write('    pass\n\n')
+    parser_migrate = subparsers.add_parser("migrate", help="migrate help")
+    parser_migrate.add_argument("path", metavar="PATH", help="Migrate outdated tests to the most recent form")
+    parser_migrate.set_defaults(func=migrate_tests)
 
-        for step in steps:
-            file.write(f'@when(\'{step.replace("_", " ").title()}\')\n')
-            file.write(f'def {step}():\n')
-            file.write('    pass\n\n')
+    args = parser.parse_args()
+    if hasattr(args, "func"):
+        args.func(args)
 
-        for step in steps:
-            file.write(f'@then(\'{step.replace("_", " ").title()}\')\n')
-            file.write(f'def {step}():\n')
-            file.write('    pass\n\n')
 
 if __name__ == '__main__':
-    generate_test_cases(ensure_path_sep('\\tests\\features\\shop\\shop.feature'))
+    main()
