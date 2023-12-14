@@ -19,6 +19,11 @@ from utils.log_control import INFO, ERROR
 
 new_template_lookup = TemplateLookup(directories=[os.path.join(os.path.dirname(__file__), "templates")])
 
+openai.api_key = read_config("OPENAI_API_KEY")  # 获取config中配置的OPENAI_API_KEY
+# openai.api_key = os.getenv("OPENAI_API_KEY")  # 获取你系统变量中配置的OPENAI_API_KEY
+openai.api_base = "https://openai.wndbac.cn/v1" #在这里设置即可,需要特别注意这里的/v1是必须的，否则报错。前面的地址注意替换即可。
+# openai.proxy = "https://api.nextweb.fun/openai"
+
 
 def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTemplate], steps: List[Step]) -> str:
     """Generate test code using a new template file."""
@@ -33,7 +38,36 @@ def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTempla
         make_python_name=make_python_name,
         make_python_docstring=make_python_docstring,
         make_string_literal=make_string_literal,
+        
     )
+
+    # # 使用steps来生成函数名
+    # function_names = []
+    # try: 
+
+    #     for step in steps:
+    #         # 使用OpenAI生成函数名
+    #         response = openai.ChatCompletion.create(
+    #                 model="gpt-3.5-turbo-16k",  # 使用最新的模型
+    #                 # 这里添加了messages参数，它是一个包含单个系统消息的列表
+    #                 messages=[
+    #                     {"role": "system", "content": f"Generate a function name for the step: {step.name}"}
+    #                 ],
+    #                 max_tokens=10000,
+    #                 stop=["&nbsp;", "."],
+    #             )
+                
+    #         # 处理生成的函数名
+    #         for choice in response.choices:
+    #             try:
+    #                 function_name = choice.text.strip()
+    #                 function_names.append(function_name)
+    #             except AttributeError:
+    #                 pass
+
+    # except OpenAIError as e:
+    #     ERROR.logger.error("OpenAI报错: %s", e)
+    #     exit(1)
 
     return cast(str, results)
 
@@ -42,7 +76,6 @@ def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTempla
 def patch_generate_code(monkeypatch):
     monkeypatch.setattr(generation, "generate_code", custom_generate_code)
 
-# 这是一个使用了上面 fixture 的测试函数
 def test_with_custom_generate_code(patch_generate_code):
     # 调用 generate_code 时将实际调用 custom_generate_code
     assert True
@@ -51,6 +84,7 @@ def test_with_custom_generate_code(patch_generate_code):
 # generate cli命令
 def print_generated_code(args: argparse.Namespace) -> None:
     """Print generated test code for the given filenames."""
+    # 解析出还未放进模板的 features、scenarios、steps
     features, scenarios, steps = parse_feature_files(args.files)
     # 这里使用的是自定义 custom_generate_code 函数
     code = custom_generate_code(features, scenarios, steps)
