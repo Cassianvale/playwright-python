@@ -1,4 +1,4 @@
-# custom_generate_code.py
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """使用新模板生成测试用例"""
@@ -7,21 +7,22 @@ import os
 import pytest
 import argparse
 import openai
-from openai.error import OpenAIError
 from pytest_bdd import generation
-from pytest_bdd.generation import cast, make_python_name, make_python_docstring, make_string_literal, parse_feature_files
+from pytest_bdd.generation import cast, make_python_name, make_python_docstring, make_string_literal, \
+    parse_feature_files
 from pytest_bdd.parser import Feature, ScenarioTemplate, Step
 from pytest_bdd.scripts import check_existense, migrate_tests
 from mako.lookup import TemplateLookup
 from typing import List
-from utils.yaml_control import read_config, mask_system, mask_user
-from utils.log_control import INFO, ERROR
+from utils.yaml_control import read_config
 
 new_template_lookup = TemplateLookup(directories=[os.path.join(os.path.dirname(__file__), "templates")])
 
 openai.api_key = read_config("OPENAI_API_KEY")  # 获取config中配置的OPENAI_API_KEY
 # openai.api_key = os.getenv("OPENAI_API_KEY")  # 获取你系统变量中配置的OPENAI_API_KEY
-openai.api_base = "https://openai.wndbac.cn/v1" #在这里设置即可,需要特别注意这里的/v1是必须的，否则报错。前面的地址注意替换即可。
+openai.api_base = "https://openai.wndbac.cn/v1"  # 在这里设置即可,需要特别注意这里的/v1是必须的，否则报错。前面的地址注意替换即可。
+
+
 # openai.proxy = "https://api.nextweb.fun/openai"
 
 
@@ -30,7 +31,7 @@ def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTempla
     grouped_steps = generation.group_steps(steps)
 
     template = new_template_lookup.get_template("new_test.py.mak")
-    
+
     results = template.render(
         features=features,
         scenarios=scenarios,
@@ -38,7 +39,6 @@ def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTempla
         make_python_name=make_python_name,
         make_python_docstring=make_python_docstring,
         make_string_literal=make_string_literal,
-        
     )
 
     # # 使用steps来生成函数名
@@ -56,7 +56,7 @@ def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTempla
     #                 max_tokens=10000,
     #                 stop=["&nbsp;", "."],
     #             )
-                
+
     #         # 处理生成的函数名
     #         for choice in response.choices:
     #             try:
@@ -71,10 +71,12 @@ def custom_generate_code(features: List[Feature], scenarios: List[ScenarioTempla
 
     return cast(str, results)
 
+
 # 使用 monkeypatch 替换原库里的代码
 @pytest.fixture
 def patch_generate_code(monkeypatch):
     monkeypatch.setattr(generation, "generate_code", custom_generate_code)
+
 
 def test_with_custom_generate_code(patch_generate_code):
     # 调用 generate_code 时将实际调用 custom_generate_code
@@ -89,6 +91,7 @@ def print_generated_code(args: argparse.Namespace) -> None:
     # 这里使用的是自定义 custom_generate_code 函数
     code = custom_generate_code(features, scenarios, steps)
     print(code)
+
 
 def main() -> None:
     """Custom main entry point."""

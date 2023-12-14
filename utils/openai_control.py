@@ -1,6 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import openai
 from utils.yaml_control import read_config, mask_system, mask_user
 

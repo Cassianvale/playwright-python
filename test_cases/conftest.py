@@ -1,9 +1,4 @@
 import pytest
-import os
-import codecs
-import yaml
-import jinja2
-import pytest_bdd
 
 from playwright.sync_api import Page, sync_playwright
 
