@@ -2,7 +2,7 @@ import pytest
 
 from pages.playwright_home_page import PlaywrightHomePage
 from pages.playwright_languages_page import PlaywrightLanguagesPage
-from common import read_config as rd
+from utils.yaml_control import read_config
 
 
 class TestSearch:
@@ -13,7 +13,7 @@ class TestSearch:
         playwright_home_page: PlaywrightHomePage,
         playwright_languages_page: PlaywrightLanguagesPage
     ):
-        playwright_home_page.visit(rd("BASE_URL"))
+        playwright_home_page.visit(read_config("BASE_URL_A"))
         playwright_home_page.navbar.open_search()
         playwright_home_page.navbar.search_modal.find_result(
             keyword, result_number=0

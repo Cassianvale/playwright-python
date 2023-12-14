@@ -21,14 +21,3 @@ def ensure_path_sep(path: Text) -> Text:
         path = os.sep.join(path.split("\\"))
 
     return root_path() + path
-
-
-def read_config(key: str) -> str:
-    """ 读取config配置文件，下面是为了避免循环依赖 """
-    from utils.yaml_control import GetYamlData
-    config = GetYamlData(ensure_path_sep('\\common\\config.yaml')).get_yaml_data()
-    return config[key]
-
-
-if __name__ == '__main__':
-    read_config('BASE_URL')

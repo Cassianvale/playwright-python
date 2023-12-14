@@ -1,2 +1,12 @@
-BASE_URL: https://playwright.dev
-REPO_URL: https://github.com/microsoft/playwright
+BASE_URL_A: https://playwright.dev
+BASE_URL_B: https://www.aigodlike.com
+
+OPENAI_API_KEY: sk-EJxxxxx
+
+# 数据库连接配置信息
+mysql:
+  host: 127.0.0.1
+  user: root
+  password: root
+  database: testDB
+  port: 3306
