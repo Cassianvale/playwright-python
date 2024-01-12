@@ -4,6 +4,7 @@ from playwright.sync_api import Locator, Page, expect
 
 
 class BaseComponent(ABC):
+    # locator接受CSS选择器和XPath表达式
     def __init__(self, page: Page, locator: str, name: str) -> None:
         self.page = page
         self.name = name
@@ -14,6 +15,7 @@ class BaseComponent(ABC):
     def type_of(self) -> str:
         return 'component'
 
+    # 获取定位器
     def get_locator(self, **kwargs) -> Locator:
         locator = self.locator.format(**kwargs)
         return self.page.locator(locator)

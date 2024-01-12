@@ -28,13 +28,3 @@ def read_config(key: str) -> str:
         raise KeyError(f"config不包含 {key} 键名")
 
 
-# 读取面具预设词
-def mask_system():
-    with open(ensure_path_sep('\\common\\mask_system.txt'), 'r', encoding='utf-8') as f:
-        return f.read()
-
-
-# 读取面具用户词(用于生成函数名,需要把feature内容遍历进去)
-def mask_user():
-    with open(ensure_path_sep('\\common\\mask_user.txt'), 'r', encoding='utf-8') as f:
-        return f.read()
