@@ -1,5 +1,5 @@
 BASE_URL_A: https://playwright.dev
-BASE_URL_B: https://admin.testtakeaway.xixiang000.com/admin
+BASE_URL_B: 
 
 OPENAI_API_KEY: sk-EJxxxxx
 
