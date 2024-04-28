@@ -30,7 +30,3 @@ class PlaywrightKeepLogin(PlaywrightHomePage):
         self.login_input_username.fill(username)
         self.login_input_password.fill(password)
         self.login_button.click()
-
-    def wait_for_login(self):
-        # 等待登录完成，这里可以添加更多特定的等待逻辑
-        self.page.wait_for_selector(".login-success", state="visible")
