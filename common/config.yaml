@@ -1,5 +1,5 @@
 BASE_URL_A: https://playwright.dev
-BASE_URL_B: 
+BASE_URL_B: https://jekip.github.io/login
 
 OPENAI_API_KEY: sk-EJxxxxx
 
